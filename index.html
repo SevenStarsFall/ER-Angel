@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ER Angel • Medical Mystery Toolbox</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-teal: linear-gradient(135deg, #0ea5e9, #14b8a6);
+            --warning-amber: linear-gradient(135deg, #f59e0b, #ef4444);
+            --info-green: linear-gradient(135deg, #10b981, #34d399);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e2937;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: var(--primary-teal);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+        
+        .nav-dropdown {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .nav-dropdown select {
+            padding: 10px 16px;
+            border: none;
+            font-size: 1rem;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .module-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+        
+        .module-icon {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .teal-btn { background: var(--primary-teal); color: white; }
+        .amber-btn { background: var(--warning-amber); color: white; }
+        .green-btn { background: var(--info-green); color: white; }
+        
+        .module-card h3 {
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .critical-section {
+            margin-top: 3rem;
+            background: #fef3f2;
+            border-radius: 16px;
+            padding: 2rem;
+            border-left: 6px solid #ef4444;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 640px) {
+            .modules-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🪽 ER Angel</h1>
+        <p class="subtitle">Medical Mystery Toolbox for Patient Frank</p>
+        
+        <!-- Dropdown Navigation -->
+        <div class="nav-dropdown">
+            <select id="toolbox-nav" onchange="navigateTo(this.value)">
+                <option value="">Jump to Module...</option>
+                <option value="er-flashcards.html">ER Flash Cards</option>
+                <option value="patient-history.html">Patient History</option>
+                <option value="pass-forward.html">Pass Forward</option>
+                <option value="critical-paths.html">Critical Risk Pathways</option>
+                <option value="trends-graphs.html">Trends & Graphs</option>
+                <option value="toolbox-resources.html">Toolbox Resources</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 style="text-align:center; margin-bottom:1.5rem; color:#0f766e;">Choose Your Tool</h2>
+        
+        <!-- 7 Icon Grid -->
+        <div class="modules-grid">
+            <a href="er-flashcards.html" target="_blank" class="module-card teal-btn">
+                <span class="module-icon">🃏</span>
+                <h3>ER Flash Cards</h3>
+            </a>
+            
+            <a href="patient-history.html" target="_blank" class="module-card teal-btn">
+                <span class="module-icon">📋</span>
+                <h3>Patient History</h3>
+            </a>
+            
+            <a href="pass-forward.html" target="_blank" class="module-card teal-btn">
+                <span class="module-icon">🔄</span>
+                <h3>Pass Forward</h3>
+            </a>
+            
+            <a href="critical-paths.html" target="_blank" class="module-card amber-btn">
+                <span class="module-icon">⚠️</span>
+                <h3>Critical Pathways</h3>
+            </a>
+            
+            <a href="trends-graphs.html" target="_blank" class="module-card green-btn">
+                <span class="module-icon">📈</span>
+                <h3>Trends & Graphs</h3>
+            </a>
+            
+            <a href="toolbox-resources.html" target="_blank" class="module-card teal-btn">
+                <span class="module-icon">🧰</span>
+                <h3>Resources & Logs</h3>
+            </a>
+            
+            <a href="#" onclick="alert('Coming soon – additional quick tools'); return false;" class="module-card teal-btn">
+                <span class="module-icon">🔧</span>
+                <h3>More Tools</h3>
+            </a>
+        </div>
+
+        <!-- Patient Frank Critical Summary -->
+        <div class="critical-section">
+            <h2 style="color:#b91c1c; margin-bottom:1rem;">⚠️ Patient Frank – Pathways to Serious Risk</h2>
+            <p>Review these high-risk scenarios before any intervention. Full details and avoidance strategies are in the Critical Pathways page.</p>
+            <ul style="margin-top:1rem; padding-left:1.5rem;">
+                <li>Rapid ping-ponging between opioids → collapsed relief windows + escalated minimum dose</li>
+                <li>Unmonitored benzo + opioid overlap → respiratory depression</li>
+                <li>Inconsistent dosing intervals → micro-withdrawal cycles</li>
+                <li>Ignoring cross-tolerance when rotating agents</li>
+            </ul>
+            <p style="margin-top:1rem; font-weight:600;">Always prioritize steady-state dosing and clear documentation.</p>
+        </div>
+    </div>
+
+    <footer>
+        ER Angel Toolbox • Built for rapid deployment • Separate flat files for maximum robustness • Version 1.0
+    </footer>
+
+    <script>
+        function navigateTo(page) {
+            if (page) {
+                window.open(page, '_blank');
+            }
+        }
+        
+        // Optional: Keyboard shortcut hint (future enhancement)
+        console.log('%cER Angel Toolbox ready. All modules open in new tabs for safety.', 'color:#0ea5e9; font-weight:bold');
+    </script>
+</body>
+</html>

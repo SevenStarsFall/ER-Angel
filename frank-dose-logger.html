@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frank Dose Logger</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; color: #333; }
+        h1 { color: #d32f2f; text-align: center; }
+        .form { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto 30px; }
+        select, input, button { padding: 10px; margin: 5px 0; font-size: 16px; width: 100%; border-radius: 8px; border: 1px solid #ccc; }
+        button { background: #d32f2f; color: white; font-weight: bold; cursor: pointer; }
+        button:hover { background: #b71c1c; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #ffebee; }
+        .analysis { background: white; padding: 20px; border-radius: 12px; margin-top: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .log { max-height: 500px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+<h1>Frank Dose Logger</h1>
+
+<div class="form">
+    <label>Date &amp; Time</label>
+    <input type="datetime-local" id="dateTime" style="width:100%;">
+
+    <label>Medication</label>
+    <select id="med">
+        <option value="GB">Gabapentin (GB)</option>
+        <option value="Z">Alprazolam (Z / Xanax)</option>
+        <option value="ODT">Ondansetron (ODT / Zofran)</option>
+        <option value="Kr">Kratom (Kr)</option>
+        <option value="THC">THC / Puff</option>
+        <option value="Other">Other</option>
+    </select>
+
+    <label>Dose</label>
+    <select id="dose">
+        <!-- populated by JS -->
+    </select>
+
+    <label>Notes (optional)</label>
+    <input type="text" id="notes" placeholder="e.g. chewed, under tongue, puff, stomach relief">
+
+    <button onclick="addEntry()">+ Add Entry</button>
+</div>
+
+<div class="log">
+    <h2>Log History</h2>
+    <table id="logTable">
+        <thead><tr><th>Date</th><th>Med</th><th>Dose</th><th>Notes</th></tr></thead>
+        <tbody id="logBody"></tbody>
+    </table>
+</div>
+
+<div class="analysis">
+    <h2>Daily Analysis</h2>
+    <p id="stats">No entries yet. Add some doses above to see totals and trends.</p>
+    <button onclick="exportCSV()">Export to CSV</button>
+</div>
+
+<script>
+    // Populate dose dropdown based on med
+    function updateDoses() {
+        const med = document.getElementById('med').value;
+        const doseSelect = document.getElementById('dose');
+        doseSelect.innerHTML = '';
+
+        if (med === 'GB') {
+            [300,600,900,1200,1800,2400,3000,3600].forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d + ' mg';
+                doseSelect.appendChild(opt);
+            });
+        } else if (med === 'Z') {
+            [0.25,0.3,0.4,0.5,0.6,0.75,1.0,1.5,2.0].forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d + ' mg';
+                doseSelect.appendChild(opt);
+            });
+        } else if (med === 'ODT') {
+            [4,8,12,16].forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d + ' mg';
+                doseSelect.appendChild(opt);
+            });
+        } else if (med === 'Kr') {
+            [1,2,3,4,5,6,8].forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d + ' g';
+                doseSelect.appendChild(opt);
+            });
+        } else if (med === 'THC') {
+            ['1 puff','2 puffs','1 gummy','2 gummies'].forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d;
+                doseSelect.appendChild(opt);
+            });
+        } else {
+            const opt = document.createElement('option');
+            opt.value = 'custom'; opt.textContent = 'Enter custom dose';
+            doseSelect.appendChild(opt);
+        }
+    }
+
+    // Auto-set today’s date
+    function setToday() {
+        const now = new Date();
+        const local = now.toISOString().slice(0,16);
+        document.getElementById('dateTime').value = local;
+    }
+
+    // Add entry
+    function addEntry() {
+        const dt = document.getElementById('dateTime').value;
+        const med = document.getElementById('med').options[document.getElementById('med').selectedIndex].text;
+        const dose = document.getElementById('dose').value;
+        const notes = document.getElementById('notes').value || '-';
+
+        if (!dt || !dose) {
+            alert('Please select date/time and dose');
+            return;
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${new Date(dt).toLocaleString()}</td>
+            <td>${med}</td>
+            <td>${dose}</td>
+            <td>${notes}</td>
+        `;
+        document.getElementById('logBody').prepend(row); // newest on top
+
+        // Clear notes
+        document.getElementById('notes').value = '';
+
+        updateAnalysis();
+    }
+
+    // Simple daily analysis
+    function updateAnalysis() {
+        const rows = document.querySelectorAll('#logBody tr');
+        if (rows.length === 0) return;
+
+        let totalGB = 0, totalZ = 0, totalODT = 0;
+        rows.forEach(row => {
+            const medText = row.cells[1].textContent;
+            const doseText = row.cells[2].textContent;
+            const num = parseFloat(doseText) || 0;
+
+            if (medText.includes('Gabapentin')) totalGB += num;
+            else if (medText.includes('Alprazolam') || medText.includes('Z')) totalZ += num;
+            else if (medText.includes('Ondansetron') || medText.includes('ODT')) totalODT += num;
+        });
+
+        document.getElementById('stats').innerHTML = `
+            <strong>Today’s totals so far:</strong><br>
+            Gabapentin: ${totalGB} mg<br>
+            Alprazolam (Z): ${totalZ} mg<br>
+            Ondansetron (ODT): ${totalODT} mg<br><br>
+            <em>Tip: Longer relief windows appear when both GB + Z are used together at low doses.</em>
+        `;
+    }
+
+    // Export to CSV
+    function exportCSV() {
+        let csv = 'Date,Medication,Dose,Notes\n';
+        const rows = document.querySelectorAll('#logBody tr');
+        rows.forEach(row => {
+            csv += Array.from(row.cells).map(cell => `"${cell.textContent}"`).join(',') + '\n';
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'frank-dose-log.csv';
+        a.click();
+    }
+
+    // Init
+    window.onload = () => {
+        setToday();
+        updateDoses();
+        document.getElementById('med').addEventListener('change', updateDoses);
+    };
+</script>
+
+</body>
+</html>

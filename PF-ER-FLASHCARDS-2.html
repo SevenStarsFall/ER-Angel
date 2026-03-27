@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
+  <title>PF Emergency Alert - Slider</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #111;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+    header {
+      text-align: center;
+      padding: 15px 0;
+      width: 100%;
+      background: #c00;
+      color: white;
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .slider {
+      width: 100%;
+      max-width: 500px; /* comfortable on most phones */
+      overflow-x: scroll;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
+      display: flex;
+      gap: 15px;
+      padding: 10px;
+    }
+    .card {
+      flex: 0 0 85%; /* \~full width with a bit of peek to next card */
+      aspect-ratio: 3 / 4; /* portrait card feel */
+      background: #222;
+      border-radius: 16px;
+      overflow: hidden;
+      scroll-snap-align: center;
+      position: relative;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    .card.flipped .front { transform: rotateY(180deg); opacity: 0; }
+    .card.flipped .back  { transform: rotateY(0deg); opacity: 1; }
+    .front, .back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      transition: all 0.6s ease;
+      display: flex;
+      flex-direction: column;
+      padding: 25px;
+      font-size: 1.3rem;
+      line-height: 1.45;
+      overflow-y: auto;
+    }
+    .front {
+      background: linear-gradient(135deg, #444, #222);
+      color: #ffdd00;
+      font-weight: bold;
+      justify-content: center;
+      text-align: center;
+    }
+    .back {
+      background: #333;
+      transform: rotateY(180deg);
+      opacity: 0;
+      font-size: 1.1rem;
+      color: #eee;
+    }
+    .card-number {
+      position: absolute;
+      top: 12px;
+      right: 15px;
+      font-size: 1rem;
+      color: #888;
+    }
+    .instructions {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.95rem;
+      margin: 15px 0;
+      max-width: 90%;
+    }
+    @media (orientation: landscape) {
+      .card { flex: 0 0 70%; aspect-ratio: 4 / 3; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>Patient Frank – Emergency Medical Alert</header>
+
+  <div class="instructions">
+    Swipe left/right to change cards • Tap card to flip • Large text for ER staff
+  </div>
+
+  <div class="slider">
+
+    <!-- Card 1 -->
+    <div class="card" onclick="this.classList.toggle('flipped')">
+      <div class="card-number">1</div>
+      <div class="front">Fatal “Drop”/Purge Cycle</div>
+      <div class="back">
+        Sudden stomach pressure (>7/10 bloating), nausea, vertigo → intractable vomiting every 15–20 min + hiccups (suffocating: \~2 sec breath/60 sec, screeching). Vomiting → electrolyte collapse → cardiac arrest. ICU: seconds from arrest. “You purge, you die.”
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card" onclick="this.classList.toggle('flipped')">
+      <div class="card-number">2</div>
+      <div class="front">Purge Reset & Cycles</div>
+      <div class="back">
+        Requires benzo shot (e.g. 1–2 mg alprazolam q2-3h) + possible gabapentin + sleep to reset stomach. Cycles: 2-3h (crisis), 6-7h, 12h+ RW with stack. Bad episode burns supplies fast → under-supply = death.
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card" onclick="this.classList.toggle('flipped')">
+      <div class="card-number">3</div>
+      <div class="front">History of Intractable Purging</div>
+      <div class="back">
+        3+ ER/ICU for unstoppable vomiting + hiccups. Near-cardiac arrest from electrolytes. Childhood (age 3) concrete stairs fall → forehead stitches; suspected vagus nerve damage. Stress/emotion purging since age 5. Weight 210 → 149 lbs.
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card" onclick="this.classList.toggle('flipped')">
+      <div class="card-number">4</div>
+      <div class="front">THC/Kratom Role & Hospital Risks</div>
+      <div class="back">
+        THC + Kratom (3–8 g) suppress nausea fast, relax stomach, enable eating. Critical bridge. Hospitals may refuse admission due to “unprescribed” substances. THC buys 30–90 min; Kratom cuts hip pain 9/10.
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="card" onclick="this.classList.toggle('flipped')">
+      <div class="card-number">5</div>
+      <div class="front">Dose Reduction Success</div>
+      <div class="back">
+        Lowered alprazolam to micro-doses (0.2–0.6 mg), gabapentin from 4200 mg to 600–1800 mg/day. RW up to 12–15 hrs. Gabapentin bridged alprazolam taper (accomplished); now target gabapentin elimination.
+      </div>
+    </div>
+
+    <!-- Add the remaining cards here in the same format -->
+    <!-- Card 6: Vagus nerve hypothesis -->
+    <div class="card" onclick="this.classList.toggle('flipped')">
+      <div class="card-number">6</div>
+      <div class="front">Vagus Nerve & Childhood Trigger</div>
+      <div class="back">
+        Age-3 concrete fall → forehead trauma (stitches top center). Likely vagus injury: hyper-reactive stomach on stress/talking/movement; intractable hiccups/vomiting loop. Golden Rule: Never let purging start.
+      </div>
+    </div>
+
+    <!-- Card 7: Short supply danger -->
+    <div class="card" onclick="this.classList.toggle('flipped')">
+      <div class="card-number">7</div>
+      <div class="front">Short Supply = Lethal</div>
+      <div class="back">
+        Anxiety over running out → stomach spike → Drop. Under-prescribed → episodes burn supplies → death. Shortage forces high rebound doses, erases taper gains.
+      </div>
+    </div>
+
+    <!-- Continue adding Cards 8–14 similarly... -->
+
+  </div>
+
+  <script>
+    // Optional: Prevent accidental double-tap zoom on mobile
+    document.addEventListener('touchstart', function(e) {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+  </script>
+
+</body>
+</html>

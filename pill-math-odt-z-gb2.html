@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pill Math – ODT / Z / GB</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #111;
+      color: #eee;
+      margin: 0;
+      padding: 16px;
+      line-height: 1.5;
+    }
+    h1 {
+      text-align: center;
+      color: #ffdd44;
+      margin: 0 0 24px;
+    }
+    label {
+      display: block;
+      margin: 18px 0 6px;
+      font-weight: bold;
+      font-size: 1.15rem;
+    }
+    input[type="date"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.25rem;
+      border-radius: 8px;
+      border: 1px solid #555;
+      background: #222;
+      color: #eee;
+    }
+    button {
+      margin: 28px 0 12px;
+      padding: 16px;
+      width: 100%;
+      font-size: 1.25rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #calculate { background: #c00; color: white; }
+    #reset { background: #444; color: #ccc; }
+    #result {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 24px;
+      font-family: 'Courier New', monospace;
+      font-size: 1.15rem;
+      line-height: 1.55;
+      color: #0f0;
+      white-space: pre-wrap;
+    }
+    .saved {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Pill Math – ODT / Z / GB</h1>
+
+<label>Next Fill Date</label>
+<input type="date" id="fillDate">
+
+<label>ODT 8 MG – Remaining</label>
+<input type="number" step="0.01" id="rem_odt" placeholder="e.g. 19 or 18" />
+
+<label>Z 1 MG – Remaining</label>
+<input type="number" step="0.01" id="rem_z" placeholder="e.g. 5.25" />
+
+<label>GB 600mg – Remaining</label>
+<input type="number" step="0.01" id="rem_gb" placeholder="e.g. 14 or 12" />
+
+<button id="calculate">Calculate</button>
+<button id="reset">Reset All</button>
+
+<div id="result"></div>
+<div class="saved" id="saveMsg">Auto-saved to browser</div>
+
+<script>
+  const STORAGE_KEY = 'pillMathODTZGB';
+
+  const meds = [
+    { id: 'odt', label: 'ODT 8 MG' },
+    { id: 'z',   label: 'Z 1 MG'   },
+    { id: 'gb',  label: 'GB 600mg' }
+  ];
+
+  // Load saved values
+  function loadData() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    try {
+      const data = JSON.parse(saved);
+      if (data.fill) document.getElementById('fillDate').value = data.fill;
+      meds.forEach(m => {
+        if (data[m.id] !== undefined) {
+          document.getElementById(`rem_${m.id}`).value = data[m.id];
+        }
+      });
+    } catch(e) {}
+  }
+
+  // Save on any input change
+  function saveData() {
+    const data = { fill: document.getElementById('fillDate').value };
+    meds.forEach(m => {
+      const val = document.getElementById(`rem_${m.id}`).value.trim();
+      if (val) data[m.id] = val;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    document.getElementById('saveMsg').textContent = "Saved ✓ " + new Date().toLocaleTimeString([], {timeStyle: 'short'});
+  }
+
+  // Attach listeners
+  document.querySelectorAll('input').forEach(el => el.addEventListener('input', saveData));
+
+  // Calculate button
+  document.getElementById('calculate').onclick = () => {
+    const fillStr = document.getElementById('fillDate').value;
+    if (!fillStr) {
+      document.getElementById('result').innerHTML = '<span style="color:#f66">Select next fill date</span>';
+      return;
+    }
+
+    const fill = new Date(fillStr + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0,0,0,0); // midnight for clean day count
+
+    const diffMs = fill - today;
+    if (diffMs <= 0) {
+      document.getElementById('result').innerHTML = '<span style="color:#f66">Fill date must be in the future</span>';
+      return;
+    }
+
+    const days = Math.floor(diffMs / 86400000);
+    const hours = Math.floor((diffMs % 86400000) / 3600000);
+    const mins  = Math.floor((diffMs % 3600000) / 60000);
+
+    let output = `Time to fill: ${days}d ${hours}h ${mins}m\n`;
+    output += `Divider (days left): ${days}\n\n`;
+
+    let hasData = false;
+
+    meds.forEach(m => {
+      const remStr = document.getElementById(`rem_${m.id}`).value.trim();
+      if (!remStr || isNaN(parseFloat(remStr)) || parseFloat(remStr) <= 0) return;
+
+      hasData = true;
+      const rem = parseFloat(remStr);
+      const ppd = rem / days;
+
+      const per6hr = ppd / 4;
+      const per12hr = ppd / 2;
+
+      output += `${m.label} – ${rem} remaining / ${days} days\n`;
+      output += `  → Pills per 24h: ${ppd.toFixed(2)}\n`;
+      output += `  → 1.5 pills per 6hr cycle (4× daily): ${(per6hr * 1.5).toFixed(2)} PPD\n`;
+      output += `     Per cycle: ${per6hr.toFixed(2)}\n`;
+      output += `  → 4 pills per 12hr RW (2× daily): ${(per12hr * 4).toFixed(2)} PPD\n`;
+      output += `     Per dose: ${per12hr.toFixed(2)}\n\n`;
+    });
+
+    if (!hasData) {
+      output += "No remaining amounts entered yet.";
+    }
+
+    document.getElementById('result').textContent = output;
+  };
+
+  // Reset
+  document.getElementById('reset').onclick = () => {
+    if (confirm("Clear all saved data?")) {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  };
+
+  // Init
+  loadData();
+</script>
+
+</body>
+</html>

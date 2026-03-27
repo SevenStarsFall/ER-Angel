@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pill Math – Pre-Populated Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(to bottom, #f0f8ff, #e6f2ff);
+      color: #2c3e50;
+      margin: 0;
+      padding: 16px;
+      line-height: 1.5;
+    }
+    h1 { text-align:center; color:#d97706; margin-bottom:12px; }
+    img.banner { width:100%; max-height:160px; object-fit:cover; border-radius:12px; margin-bottom:16px; }
+    label { font-weight:600; margin:14px 0 6px; display:block; color:#4b5563; }
+    input { width:100%; padding:10px; font-size:1.05rem; border:1px solid #d1d5db; border-radius:6px; background:white; }
+    button { width:100%; padding:12px; margin:10px 0; font-size:1.1rem; font-weight:bold; border:none; border-radius:8px; cursor:pointer; }
+    #recalc { background:#f59e0b; color:white; }
+    #copy { background:#10b981; color:white; }
+    #reset { background:#6b7280; color:white; }
+    #result { background:#fefce8; padding:16px; border-radius:10px; margin:16px 0; border:1px solid #fef08a; white-space:pre-wrap; font-size:1.05rem; }
+    .time { text-align:center; font-size:1.1rem; color:#d97706; margin:10px 0; }
+  </style>
+</head>
+<body>
+
+<img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Cliffside ocean golden hour" class="banner">
+
+<h1>Pill Math – Pre-Populated</h1>
+
+<div class="time" id="liveTime">Time loading...</div>
+
+<label>Next Fill Date & Time</label>
+<input type="datetime-local" id="fillDateTime" value="2026-03-21T16:00">
+
+<label>ODT 8 MG – Remaining</label>
+<input type="number" step="0.01" id="rem_odt" value="14">
+
+<label>Z 1 MG – Remaining</label>
+<input type="number" step="0.01" id="rem_z" value="3.6">
+
+<label>GB 600mg – Remaining</label>
+<input type="number" step="0.01" id="rem_gb" value="4">
+
+<button id="recalc">Refresh / Recalculate</button>
+<button id="copy">📋 Copy Result</button>
+<button id="reset">Clear All</button>
+
+<div id="result"></div>
+
+<script>
+// Live time
+function updateTime() {
+  const now = new Date();
+  document.getElementById('liveTime').textContent = 'Current: ' + now.toLocaleString([], {hour:'2-digit', minute:'2-digit', hour12:true});
+}
+setInterval(updateTime, 30000);
+updateTime();
+
+// Calculate function
+function calculate() {
+  const fillVal = document.getElementById('fillDateTime').value;
+  if (!fillVal) {
+    document.getElementById('result').innerText = 'Set fill date/time';
+    return;
+  }
+
+  const fill = new Date(fillVal);
+  const now = new Date();
+  const diffMs = fill - now;
+
+  if (diffMs <= 0) {
+    document.getElementById('result').innerHTML = '<span style="color:#c00">Fill time is past or now – no days left</span>';
+    return;
+  }
+
+  const totalHours = diffMs / 3600000;
+  const days = Math.floor(totalHours / 24);
+  const hoursLeft = Math.floor(totalHours);
+  const minsLeft = Math.floor((totalHours - hoursLeft) * 60);
+
+  let output = `Until fill: ${hoursLeft}h ${minsLeft}m`;
+  if (days > 0) output += ` (${days}d est.)`;
+  output += '\n\n';
+
+  const meds = [
+    {name:'ODT 8 MG', rem:parseFloat(document.getElementById('rem_odt').value)||0, mg:8},
+    {name:'Z 1 MG',   rem:parseFloat(document.getElementById('rem_z').value)||0,   mg:1},
+    {name:'GB 600mg', rem:parseFloat(document.getElementById('rem_gb').value)||0,  mg:600}
+  ];
+
+  meds.forEach(med => {
+    if (med.rem <= 0) return;
+
+    const divider = days > 0 ? days : totalHours.toFixed(1) + ' hours';
+    const rate = days > 0 ? med.rem / days : (med.rem / totalHours) * 24;
+
+    output += `${med.name} – ${med.rem} remaining / ${divider}\n`;
+    output += `  → Daily rate: ${rate.toFixed(2)}\n`;
+    output += `  → 3hr (8×/day): ${(rate/8).toFixed(3)}\n`;
+    output += `  → 6hr (4×/day): ${(rate/4).toFixed(3)}\n`;
+    output += `  → 12hr (2×/day): ${(rate/2).toFixed(3)}\n`;
+    output += `  → 14hr:          ${(rate * 24 / 14).toFixed(3)}\n\n`;
+  });
+
+  document.getElementById('result').innerText = output.trim() || 'Enter values';
+}
+
+// Copy
+document.getElementById('copy').onclick = () => {
+  const text = document.getElementById('result').innerText;
+  if (!text.trim()) return alert('Nothing to copy');
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  alert('Copied!');
+};
+
+// Events
+document.getElementById('recalc').onclick = calculate;
+document.getElementById('reset').onclick = () => location.reload();
+
+// Run once on load
+calculate();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pill Math – Beautiful & Working</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #fffaf0, #f0f8ff, #e6f2ff);
+      color: #2d3748;
+      margin: 0;
+      padding: 16px;
+      line-height: 1.6;
+    }
+    h1 {
+      text-align: center;
+      color: #c05621;
+      margin: 12px 0 8px;
+      font-size: 2rem;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    img.banner {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    label {
+      font-weight: 600;
+      margin: 16px 0 6px;
+      display: block;
+      color: #4a5568;
+      font-size: 1.1rem;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.15rem;
+      border: 2px solid #cbd5e0;
+      border-radius: 10px;
+      background: white;
+      color: #2d3748;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      font-size: 1.15rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #recalc { background: #ed8936; color: white; }
+    #recalc:hover { background: #dd6b20; }
+    #copy { background: #48bb78; color: white; }
+    #copy:hover { background: #38a169; }
+    #emergency { background: #667eea; color: white; }
+    #emergency:hover { background: #5a67d8; }
+    #thanks { background: #9f7aea; color: white; }
+    #thanks:hover { background: #805ad5; }
+    #reset { background: #a0aec0; color: white; }
+    #reset:hover { background: #718096; }
+    #result {
+      background: #fefce8;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 2px solid #fef08a;
+      white-space: pre-wrap;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .time {
+      text-align: center;
+      font-size: 1.2rem;
+      color: #c05621;
+      margin: 12px 0;
+      font-weight: 600;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      color: #111;
+      padding: 28px;
+      max-width: 90%;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .close {
+      position: absolute;
+      top: 12px;
+      right: 20px;
+      font-size: 2.5rem;
+      cursor: pointer;
+      color: #c05621;
+    }
+    .modal img {
+      width: 100%;
+      max-width: 320px;
+      border-radius: 12px;
+      margin: 16px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .thanks-note {
+      font-style: italic;
+      color: #4a5568;
+      margin-top: 16px;
+      font-size: 1.05rem;
+    }
+  </style>
+</head>
+<body>
+
+<img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Warm golden-hour ocean view from cliffside" class="banner">
+
+<h1>Pill Math – Beautiful & Reliable</h1>
+
+<div class="time" id="liveTime">Loading time...</div>
+
+<label>Next Fill Date & Time</label>
+<input type="datetime-local" id="fillDateTime" value="2026-03-21T16:00">
+
+<label>ODT 8 MG – Remaining pills</label>
+<input type="number" step="0.01" id="rem_odt" value="14">
+
+<label>Z 1 MG – Remaining pills</label>
+<input type="number" step="0.01" id="rem_z" value="3.6">
+
+<label>GB 600mg – Remaining pills</label>
+<input type="number" step="0.01" id="rem_gb" value="4">
+
+<button id="recalc">Refresh / Recalculate</button>
+<button id="copy">📋 Copy Result</button>
+<button id="emergency">🚨 Emergency Guide</button>
+<button id="thanks">🙏 Thank You, Doctors & Nurses</button>
+<button id="reset">Reset All</button>
+
+<div id="result"></div>
+
+<!-- Emergency Modal -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <span class="close">×</span>
+    <h2 style="color:#c2410c;">YOU PURGE = YOU DIE – ACT FAST</h2>
+    <p><strong>Golden Rule:</strong> Stomach pressure >5/10 or talking/movement triggers nausea? Act in minutes or risk fatal electrolyte crash + cardiac arrest.</p>
+    <p><strong>Immediate steps:</strong><br>
+    1. Lie down flat<br>
+    2. Impact massager on stomach<br>
+    3. THC puff immediately<br>
+    4. Chew 1–2 GB + 0.5–1 mg Z (or full stack)<br>
+    5. Sip water slowly if able</p>
+    <p><strong>If vomiting starts:</strong> Time is critical. Get help NOW — oral meds won't work once it begins.</p>
+    <p><strong>Never run low:</strong> Short supply = stress = faster drop.</p>
+  </div>
+</div>
+
+<!-- Thank You Modal -->
+<div id="thanksModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="document.getElementById('thanksModal').style.display='none'">×</span>
+    <h2 style="color:#c05621;">Thank You, Doctors & Nurses</h2>
+    <p class="thanks-note">For every life you've saved, every moment of pain eased, every quiet act of care — thank you.</p>
+    <p class="thanks-note">To those who couldn't be saved, your efforts were not in vain. They mattered.</p>
+    <img src="https://images.pexels.com/photos/2079246/pexels-photo-2079246.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Delicate hand-sketched tree" style="width:100%; max-width:320px; border-radius:12px;">
+    <img src="https://images.pexels.com/photos/1323550/pexels-photo-1323550.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Renaissance-style sparrow in stained glass colors" style="width:100%; max-width:320px; border-radius:12px;">
+  </div>
+</div>
+
+<script>
+function updateTime() {
+  var now = new Date();
+  var timeStr = now.toLocaleString([], {hour:'2-digit', minute:'2-digit', hour12:true});
+  document.getElementById('liveTime').textContent = 'Current: ' + timeStr;
+}
+setInterval(updateTime, 30000);
+updateTime();
+
+document.getElementById('emergency').onclick = function() {
+  document.getElementById('modal').style.display = 'flex';
+};
+document.querySelector('#modal .close').onclick = function() {
+  document.getElementById('modal').style.display = 'none';
+};
+
+document.getElementById('thanks').onclick = function() {
+  document.getElementById('thanksModal').style.display = 'flex';
+};
+document.querySelector('#thanksModal .close').onclick = function() {
+  document.getElementById('thanksModal').style.display = 'none';
+};
+
+document.getElementById('copy').onclick = function() {
+  var text = document.getElementById('result').innerText;
+  if (!text.trim()) return alert('Nothing to copy yet');
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  alert('Copied!');
+};
+
+document.getElementById('reset').onclick = function() {
+  location.reload();
+};
+
+document.getElementById('recalc').onclick = function() {
+  var fillVal = document.getElementById('fillDateTime').value;
+  if (!fillVal) {
+    document.getElementById('result').innerText = 'Select fill date & time first';
+    return;
+  }
+
+  var fill = new Date(fillVal);
+  var now = new Date();
+  var diffMs = fill - now;
+  if (diffMs <= 0) {
+    document.getElementById('result').innerHTML = '<span style="color:#c00">Fill time is past or now – no time left</span>';
+    return;
+  }
+
+  var totalHours = diffMs / 3600000;
+  var daysEst = Math.floor(totalHours / 24);
+  var hoursLeft = Math.floor(totalHours);
+  var minsLeft = Math.floor((totalHours - hoursLeft) * 60);
+
+  var output = 'Until fill: ' + hoursLeft + 'h ' + minsLeft + 'm';
+  if (daysEst > 0) output += ' (' + daysEst + 'd est.)';
+  output += '\n\n';
+
+  var meds = [
+    {name:'ODT 8 MG', rem:parseFloat(document.getElementById('rem_odt').value)||0, mg:8},
+    {name:'Z 1 MG', rem:parseFloat(document.getElementById('rem_z').value)||0, mg:1},
+    {name:'GB 600mg', rem:parseFloat(document.getElementById('rem_gb').value)||0, mg:600}
+  ];
+
+  for (var i = 0; i < meds.length; i++) {
+    var med = meds[i];
+    if (med.rem <= 0) continue;
+
+    var perHourPills = med.rem / totalHours;
+    var perHourMg = perHourPills * med.mg;
+    var ppd = perHourPills * 24;
+
+    output += med.name + ' – ' + med.rem + ' remaining\n';
+    output += '  → Max per hour: ' + perHourPills.toFixed(3) + ' pills (' + perHourMg.toFixed(1) + ' mg/h)\n';
+    output += '  → Max PPD: ' + ppd.toFixed(2) + '\n';
+    output += '  → 3hr cycle (8× daily): ' + (perHourPills * 3).toFixed(3) + ' pills per dose\n';
+    output += '  → 6hr cycle (4× daily): ' + (perHourPills * 6).toFixed(3) + ' pills per dose\n';
+    output += '  → 12hr RW (2× daily):   ' + (perHourPills * 12).toFixed(3) + ' pills per dose\n';
+    output += '  → 14hr cycle:          ' + (perHourPills * 14).toFixed(3) + ' pills per dose\n\n';
+  }
+
+  document.getElementById('result').innerText = output.trim() || 'Enter remaining amounts';
+};
+
+// Run on load
+document.getElementById('recalc').click();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frank Persistent Dose Logger</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; color: #333; }
+        h1 { color: #d32f2f; text-align: center; }
+        .form, .analysis { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 700px; margin: 20px auto; }
+        select, input, button { padding: 12px; margin: 8px 0; font-size: 16px; width: 100%; border-radius: 8px; border: 1px solid #ccc; }
+        button { background: #d32f2f; color: white; font-weight: bold; cursor: pointer; }
+        button:hover { background: #b71c1c; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #ffebee; }
+        .warning { color: #d32f2f; font-weight: bold; }
+        .entry { font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+<h1>Frank Persistent Dose Logger</h1>
+<p style="text-align:center;">Data saved automatically in your browser • Works offline</p>
+
+<div class="form">
+    <label>Date &amp; Time</label>
+    <input type="datetime-local" id="dateTime">
+
+    <label>Medication</label>
+    <select id="med">
+        <option value="GB">Gabapentin (GB)</option>
+        <option value="Z">Alprazolam (Z)</option>
+        <option value="ODT">Ondansetron (ODT)</option>
+        <option value="Kr">Kratom (Kr)</option>
+        <option value="THC">THC / Puff</option>
+        <option value="Other">Other</option>
+    </select>
+
+    <label>Dose</label>
+    <select id="dose"></select>
+
+    <label>Notes (optional)</label>
+    <input type="text" id="notes" placeholder="chewed, under tongue, puff, stomach relief...">
+
+    <button onclick="addEntry()">+ Add Entry</button>
+    <button onclick="clearAllData()" style="background:#666;">Clear All Data (Caution)</button>
+</div>
+
+<div class="log">
+    <h2>Log History</h2>
+    <table id="logTable">
+        <thead><tr><th>Date</th><th>Med</th><th>Dose</th><th>Notes</th></tr></thead>
+        <tbody id="logBody"></tbody>
+    </table>
+</div>
+
+<div class="analysis">
+    <h2>Daily Analysis</h2>
+    <p id="stats">Add entries to see totals.</p>
+    <button onclick="exportCSV()">Export to CSV</button>
+</div>
+
+<script>
+    let entries = [];
+
+    function updateDoses() {
+        const med = document.getElementById('med').value;
+        const doseSelect = document.getElementById('dose');
+        doseSelect.innerHTML = '';
+
+        if (med === 'GB') [300,600,900,1200,1800,2400,3000,3600].forEach(d => addOption(doseSelect, d + ' mg', d));
+        else if (med === 'Z') [0.25,0.3,0.4,0.5,0.6,0.75,1.0,1.5,2.0].forEach(d => addOption(doseSelect, d + ' mg', d));
+        else if (med === 'ODT') [4,8,12,16].forEach(d => addOption(doseSelect, d + ' mg', d));
+        else if (med === 'Kr') [1,2,3,4,5,6,8].forEach(d => addOption(doseSelect, d + ' g', d));
+        else if (med === 'THC') ['1 puff','2 puffs','1 gummy','2 gummies'].forEach(d => addOption(doseSelect, d, d));
+        else addOption(doseSelect, 'Custom', 'custom');
+    }
+
+    function addOption(select, text, value) {
+        const opt = document.createElement('option');
+        opt.value = value; opt.textContent = text;
+        select.appendChild(opt);
+    }
+
+    function setToday() {
+        const now = new Date();
+        document.getElementById('dateTime').value = now.toISOString().slice(0,16);
+    }
+
+    function loadEntries() {
+        const saved = localStorage.getItem('frankDoseLog');
+        if (saved) {
+            entries = JSON.parse(saved);
+            renderTable();
+        }
+    }
+
+    function saveEntries() {
+        localStorage.setItem('frankDoseLog', JSON.stringify(entries));
+    }
+
+    function addEntry() {
+        const dt = document.getElementById('dateTime').value;
+        const medSelect = document.getElementById('med');
+        const med = medSelect.options[medSelect.selectedIndex].text;
+        const dose = document.getElementById('dose').value;
+        const notes = document.getElementById('notes').value || '-';
+
+        if (!dt || !dose) {
+            alert('Please select date/time and dose');
+            return;
+        }
+
+        entries.unshift({
+            date: new Date(dt).toLocaleString(),
+            med: med,
+            dose: dose,
+            notes: notes
+        });
+
+        saveEntries();
+        renderTable();
+        updateAnalysis();
+
+        document.getElementById('notes').value = '';
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('logBody');
+        tbody.innerHTML = '';
+        entries.forEach(entry => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${entry.date}</td>
+                <td>${entry.med}</td>
+                <td>${entry.dose}</td>
+                <td>${entry.notes}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function updateAnalysis() {
+        let totalGB = 0, totalZ = 0, totalODT = 0;
+        entries.forEach(e => {
+            const d = parseFloat(e.dose) || 0;
+            if (e.med.includes('Gabapentin')) totalGB += d;
+            else if (e.med.includes('Alprazolam') || e.med.includes('Z')) totalZ += d;
+            else if (e.med.includes('Ondansetron') || e.med.includes('ODT')) totalODT += d;
+        });
+
+        document.getElementById('stats').innerHTML = `
+            <strong>Totals from all saved entries:</strong><br>
+            Gabapentin: ${totalGB} mg<br>
+            Alprazolam (Z): ${totalZ} mg<br>
+            Ondansetron: ${totalODT} mg<br><br>
+            <em>Data saved locally in browser. Export to CSV regularly for backup.</em>
+        `;
+    }
+
+    function exportCSV() {
+        let csv = 'Date,Medication,Dose,Notes\n';
+        entries.forEach(e => {
+            // Properly escape fields for CSV
+            const escapedDate = `"${e.date.replace(/"/g, '""')}"`;
+            const escapedMed = `"${e.med.replace(/"/g, '""')}"`;
+            const escapedDose = `"${e.dose.replace(/"/g, '""')}"`;
+            const escapedNotes = `"${e.notes.replace(/"/g, '""')}"`;
+            csv += `\( {escapedDate}, \){escapedMed},\( {escapedDose}, \){escapedNotes}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `frank-dose-log-${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function clearAllData() {
+        if (confirm('Delete ALL saved dose entries? This cannot be undone.')) {
+            localStorage.removeItem('frankDoseLog');
+            entries = [];
+            renderTable();
+            updateAnalysis();
+        }
+    }
+
+    // Initialize
+    window.onload = () => {
+        setToday();
+        updateDoses();
+        document.getElementById('med').addEventListener('change', updateDoses);
+        loadEntries();
+        updateAnalysis();
+    };
+</script>
+
+</body>
+</html>
